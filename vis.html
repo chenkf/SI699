@@ -2,79 +2,71 @@
 <head>
 <style>
 
-
 /*python -m SimpleHTTPServer  */
 /*http://localhost:8000*/
-
 
 </style>
 </head>
 
 <body>
 
-
 <div id="graph"></div>
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
-<!-- <script src="https://d3js.org/topojson.v2.min.js"></script> -->
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script> -->
 <script>
 
-var svg = d3.select("svg");
-var st = 0
-var path = d3.geoPath();
-// var projection = d3.geo.mercator();
-var projection = d3.geoAlbers()
-var color_list = ["White","yellow"]
+	queue()
+		.defer(d3.json, "vis.json")
+		.await(ready);
 
-
-
-queue()
-	.defer(d3.json, "116.json")
-	.await(ready);
-
-function unpack(rows, key) {
-	return rows.map(function(row){
-		return row[key];
-	});
-}
-
-function ready(error, dt) {
-    // var data_cache = dt;
-    // console.log(data_cache["n1"])
-
-    // console.log(rows)
-	console.log(dt)
-    for (i = 0; i < dt.length; i++) {
-		rows = dt[i]
-		var x = unpack(rows , 'x');
-		var y = unpack(rows , 'y');
-		var z = unpack(rows , 't');
-
-
-		Plotly.plot('graph', [{
-		  type: 'scatter3d',
-		  mode: 'lines',
-		  x: x,
-		  y: y,
-		  z: z,
-		  opacity: 0.1,
-		  line: {
-			width: 6,
-			reversescale: false
-		  }
-		}], {
-		  height: 640
+	function unpack(rows, key) {
+		return rows.map(function(row){
+			return row[key];
 		});
-    }
+	}
 
 
+	function ready(error, dt) {
 
-}
+	    for (i = 0; i < dt.length; i++) {
+
+			rows = dt[i]
+			if (rows[0]["h"] > 5 && rows[0]["h"] < 23){
+				var x = unpack(rows , 'x');
+				var y = unpack(rows , 'y');
+				var z = unpack(rows , 't');
+				var s = unpack(rows , 's');
+
+				var c = s.map(function(num){
+					if (num > 2){
+						return "green"
+					} else if (num > 1){
+						return "yellow"
+					} else {
+						return "red"
+					}
+				})
+
+				Plotly.plot('graph', [{
+				  type: 'scatter3d',
+				  mode: 'lines',
+				  x: x,
+				  y: y,
+				  z: z,
+				  opacity: 0.2,
+				  line: {
+					width: 3,
+					color: c,
+					reversescale: false
+				  }
+				}], {
+				  height: 640
+				});
+			}
+	    }
+	}
 
 
 
