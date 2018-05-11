@@ -20,7 +20,7 @@ tf.set_random_seed(42)
 # Loading data
 df_train = pd.DataFrame()
 df_test = pd.DataFrame()
-for file in glob("cnndata_125/*.csv"):
+for file in glob("cnndata_123/*.csv"):
     if "train" in file:
         df_train = pd.concat([df_train,pd.read_csv(file, names = range(101), header=None)],ignore_index=True)
     else:
@@ -50,6 +50,8 @@ n_classes = 1
 # Create model
 def multilayer_perceptron(x_mat, weights, biases):
 
+    # In this project, we used a very basic CNN structure, which contained one convolutional layer, one
+    # pooling layer, one flat layer and one hidden dense layer.
     input_layer = tf.reshape(x_mat, [-1, 10, 10 , 1])
 
     conv1 = tf.layers.conv2d(
@@ -67,8 +69,8 @@ def multilayer_perceptron(x_mat, weights, biases):
     # Output layer with linear activation
     out_layer = tf.matmul(dense, weights['out']) + biases['out']
     return out_layer
-# Store layers weight & bias
 
+# Initialize a random weight & bias
 weights = {
     'out': tf.Variable(tf.random_normal([64, n_classes], 0, 0.1))
 }
@@ -78,16 +80,17 @@ biases = {
 
 # Construct model
 # https://stackoverflow.com/questions/38399609/tensorflow-deep-neural-network-for-regression-always-predict-same-results-in-one
-# pred = tf.transpose(multilayer_perceptron(x, weights, biases))
 x = tf.placeholder("float", [None, n_input])
 y = tf.placeholder("float", [None, 1])
 pred = multilayer_perceptron(x, weights, biases)
+
+
 # Define loss and optimizer
 cost = tf.reduce_mean(tf.square(pred-y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
 print ("Finish Initializing")
-# Launch the graph
+
 
 cost_list = []
 cost_test = []
@@ -103,19 +106,19 @@ with tf.Session() as sess:
         Y_train = train_d[:,-1:]
         avg_cost = 0.
         total_batch = int(total_len/batch_size)
+
         # Loop over all batches
         for i in range(total_batch-1):
             batch_x = X_train[i*batch_size:(i+1)*batch_size]
             batch_y = Y_train[i*batch_size:(i+1)*batch_size]
 
             # Run optimization op (backprop) and cost op (to get loss value)
-
             _, c, p = sess.run([optimizer, cost, pred], feed_dict={x: batch_x,
                                                           y: batch_y})
             # Compute average loss
             avg_cost += c / total_batch
-
         cost_list.append(avg_cost)
+
         # sample prediction
         label_value = batch_y
         estimate = p
